@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
+    },
+    {
+      "name": "edulink-build",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "out", "-l", "3002"],
+      "port": 3002
     }
   ]
 }

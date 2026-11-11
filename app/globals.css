@@ -52,3 +52,37 @@ body {
 button {
   cursor: pointer;
 }
+
+/* ---------- Loading screen (pure CSS so it animates before the app loads) ---------- */
+@keyframes splash-pop {
+  0% { opacity: 0; transform: scale(0.6) rotate(-14deg); }
+  60% { opacity: 1; transform: scale(1.07) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+@keyframes splash-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+@keyframes splash-letter {
+  from { opacity: 0; transform: translateY(12px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes splash-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
+.splash-icon {
+  animation:
+    splash-pop 1.1s cubic-bezier(0.22, 1, 0.36, 1) both,
+    splash-breathe 2.6s ease-in-out 1.2s infinite;
+}
+.splash-word > span {
+  display: inline-block;
+  animation: splash-letter 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.splash-bar {
+  animation: splash-bar 2s cubic-bezier(0.65, 0, 0.35, 1) 0.8s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-icon, .splash-word > span, .splash-bar { animation: none; }
+}
