@@ -113,6 +113,7 @@ export function TestBuilder({
                   type="button"
                   whileTap={{ scale: 0.96 }}
                   onClick={() => add(t.value)}
+                  data-guide={`part-type-${t.value}`}
                   className="min-h-16 rounded-2xl bg-white p-3 text-left ring-1 ring-line transition-colors hover:bg-soft"
                 >
                   <p className="text-sm font-semibold">{t.label}</p>
@@ -130,6 +131,7 @@ export function TestBuilder({
             type="button"
             whileTap={{ scale: 0.97 }}
             onClick={() => setAdding(true)}
+            data-guide="add-part"
             className="mt-2.5 flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-ink/15 text-sm font-medium text-ink-2 transition-colors hover:bg-soft"
           >
             <Plus className="size-4" /> Add a test part
@@ -290,7 +292,11 @@ function ObjectiveEditor({
           spellCheck={false}
           className={cn(inputCls, "mb-3 bg-white font-mono tracking-widest")}
         />
-        <div className="grid gap-x-4 gap-y-2 sm:grid-cols-2">
+        {/* Two columns: first half on the left (1–5), second half on the right (6–10) */}
+        <div
+          className="grid gap-x-4 gap-y-2 sm:grid-flow-col sm:grid-cols-2 sm:[grid-template-rows:repeat(var(--rows),auto)]"
+          style={{ "--rows": Math.ceil(part.items / 2) } as React.CSSProperties}
+        >
           {Array.from({ length: part.items }, (_, i) => (
             <div key={i} className="flex items-center gap-2">
               <span className="w-7 shrink-0 text-right text-sm font-semibold text-muted tabular-nums">{i + 1}.</span>
