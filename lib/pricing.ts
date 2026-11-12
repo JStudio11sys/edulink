@@ -1,5 +1,5 @@
 /**
- * Landing-page pricing: ₱199/month, ₱1,499/year.
+ * Landing-page pricing: ₱0/month, ₱0/year (free for now).
  * (Payments aren't connected yet; the buttons lead to teacher sign-up.)
  */
 export const CURRENCY = "₱";
@@ -18,7 +18,7 @@ export const PLANS = [
   {
     id: "monthly",
     name: "Monthly",
-    price: 199,
+    price: 0 as number,
     period: "per month",
     blurb: "Flexible — cancel anytime.",
     features: ["Everything in the trial", "AI checking & essay rubrics", "Student app for at-home work", "Email support"],
@@ -28,9 +28,9 @@ export const PLANS = [
   {
     id: "yearly",
     name: "Yearly",
-    price: 1499,
+    price: 0 as number,
     period: "per year",
-    blurb: "Best value — save ₱889 (over 4 months free).",
+    blurb: "Best value — one plan for the whole year.",
     features: ["Everything in Monthly", "Priority support", "Early access to new features", "One payment for the school year"],
     cta: "Choose yearly",
     highlight: true,

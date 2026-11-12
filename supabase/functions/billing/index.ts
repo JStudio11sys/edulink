@@ -11,7 +11,7 @@
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const PRICES = { monthly: 199, yearly: 1499 } as const; // ₱
+const PRICES = { monthly: 0, yearly: 0 } as const; // ₱
 const TRIAL_DAYS = 7;
 
 const cors = {
