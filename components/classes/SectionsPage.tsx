@@ -12,8 +12,7 @@ import {
   Trash2,
   UserPlus,
   Users,
-  X,
-} from "lucide-react";
+  X, FileSpreadsheet, Upload } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import {
@@ -742,6 +741,26 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* E-Class Record (coming soon) */}
+        <Card className="mt-8">
+          <div className="flex flex-wrap items-center gap-2">
+            <FileSpreadsheet className="size-5 text-mint-deep" />
+            <h2 className="text-lg font-semibold">E-Class Record</h2>
+            <span className="rounded-full bg-peach px-2.5 py-0.5 text-[11px] font-semibold text-peach-deep">Coming soon</span>
+          </div>
+          <div className="mt-4 flex flex-col gap-2 lg:flex-row">
+            <PrimaryButton variant="soft" className="w-full lg:w-auto" disabled>
+              <Upload className="size-4" /> Upload DepEd E-Class Record
+            </PrimaryButton>
+            <PrimaryButton className="w-full lg:w-auto" disabled>
+              <FileSpreadsheet className="size-4" /> Generate {subject.name} E-Class Record
+            </PrimaryButton>
+          </div>
+          <p className="mt-3 text-sm text-muted">
+            All scores recorded will be automatically encoded in the E-Class Record Excel file.
+          </p>
+        </Card>
       </PageBody>
     </>
   );
