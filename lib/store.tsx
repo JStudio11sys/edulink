@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
 
-export type PageId = "dashboard" | "tasks" | "settings" | "sections" | "teachers" | "students" | "activities" | "profile";
+export type PageId = "dashboard" | "tasks" | "settings" | "sections" | "subjects" | "subscriptions" | "teachers" | "students" | "activities" | "profile";
 
 interface UIStore {
   page: PageId | null;

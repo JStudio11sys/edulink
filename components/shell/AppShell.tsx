@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, Compass, Eye, LayoutGrid, LogOut, School, Settings, User, Users, type LucideIcon } from "lucide-react";
+import { BookOpen, ClipboardList, Compass, CreditCard, Eye, LayoutGrid, LogOut, School, Settings, User, Users, type LucideIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useEffect } from "react";
 import { useAuth, useMe, useReadOnly } from "@/lib/auth";
@@ -14,6 +14,7 @@ import { DesktopDashboard } from "../dashboard/DesktopDashboard";
 import { MobileHome } from "../dashboard/MobileHome";
 import { Logo } from "../Logo";
 import { SettingsPage } from "../pages/SettingsPage";
+import { SubscriptionsPage } from "../pages/SubscriptionsPage";
 import { ProfilePage } from "../pages/ProfilePage";
 import { StudentsPage } from "../pages/StudentsPage";
 import { StudentActivities } from "../student/StudentActivities";
@@ -35,6 +36,7 @@ type NavItem = { id: PageId; label: string; icon: LucideIcon };
 const NAV: Record<Role, NavItem[]> = {
   admin: [
     { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
+    { id: "subscriptions", label: "Subscriptions", icon: CreditCard },
     { id: "settings", label: "Settings", icon: Settings },
     { id: "profile", label: "Profile", icon: User },
   ],
@@ -42,6 +44,7 @@ const NAV: Record<Role, NavItem[]> = {
     { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
     { id: "tasks", label: "Tasks", icon: ClipboardList },
     { id: "sections", label: "Sections", icon: School },
+    { id: "subjects", label: "Subjects", icon: BookOpen },
     { id: "students", label: "Students", icon: Users },
     { id: "profile", label: "Profile", icon: User },
   ],
@@ -63,6 +66,8 @@ function PageView({ role, page, isDesktop }: { role: Role; page: PageId; isDeskt
       return isDesktop ? <DesktopDashboard /> : <MobileHome />;
     case "settings":
       return <SettingsPage />;
+    case "subscriptions":
+      return <SubscriptionsPage />;
     case "teachers":
       return <TeachersPage />;
     case "students":
@@ -71,6 +76,8 @@ function PageView({ role, page, isDesktop }: { role: Role; page: PageId; isDeskt
       return <TasksPage />;
     case "sections":
       return <SectionsPage />;
+    case "subjects":
+      return <SectionsPage mode="subjects" />;
     case "activities":
       return <SectionsPage />;
     case "profile":

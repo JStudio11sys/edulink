@@ -22,7 +22,9 @@ import { AnimatePresence, motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useState, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { snappy, spring } from "@/lib/motion";
-import { CURRENCY, PLANS } from "@/lib/pricing";
+import { CURRENCY, PLANS, SCHOOL_PLANS } from "@/lib/pricing";
+import { useUI } from "@/lib/store";
+import { SchoolBooking } from "./SchoolBooking";
 import { Logo } from "../Logo";
 import { Credit } from "../Credit";
 
@@ -600,11 +602,52 @@ function HowItWorks() {
 
 /* ---------------- Pricing ---------------- */
 function Pricing({ onSignup }: { onSignup: () => void }) {
+  const [edition, setEdition] = useState<"teacher" | "school">("teacher");
+  const { openSheet } = useUI();
+  // School Edition books a call (no sign-up); individual plans go to teacher sign-up
+  const choose = (id: string, name: string) =>
+    id === "school" || id === "school-premium" ? openSheet(<SchoolBooking plan={id} planName={name} />) : onSignup();
+  const plans = edition === "teacher" ? PLANS : SCHOOL_PLANS;
   return (
     <section id="pricing" className="scroll-mt-20 px-5 py-20 lg:py-28">
-      <SectionTitle eyebrow="Pricing" title="Simple pricing for teachers" text="Start with a free week. Keep going monthly or save with a yearly plan." />
-      <div className="mx-auto mt-12 grid max-w-5xl gap-4 lg:grid-cols-3">
-        {PLANS.map((p, i) => (
+      <SectionTitle
+        eyebrow="Pricing"
+        title={edition === "teacher" ? "Simple pricing for teachers" : "School Edition"}
+        text={
+          edition === "teacher"
+            ? "For individual teachers. Start with a free week. Keep going monthly or save with a yearly plan."
+            : "One package for your whole school. Your admin creates and manages every teacher and student account."
+        }
+      />
+      {/* Individual / School Edition switch */}
+      <div className="mt-8 flex justify-center">
+        <div className="flex rounded-full bg-white p-1 ring-1 ring-line">
+          {(
+            [
+              { id: "teacher", label: "Individual" },
+              { id: "school", label: "School Edition" },
+            ] as const
+          ).map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => setEdition(o.id)}
+              className={cn(
+                "relative h-11 rounded-full px-5 text-sm font-medium transition-colors",
+                edition === o.id ? "text-white" : "text-ink-2 hover:text-ink",
+              )}
+            >
+              {edition === o.id && <motion.span layoutId="pricing-edition" transition={spring} className="absolute inset-0 rounded-full bg-ink" />}
+              <span className="relative">{o.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div
+        key={edition}
+        className={cn("mx-auto mt-10 grid gap-4", edition === "teacher" ? "max-w-5xl lg:grid-cols-3" : "max-w-3xl lg:grid-cols-2")}
+      >
+        {plans.map((p, i) => (
           <Reveal key={p.id} delay={i * 0.08}>
             <div
               className={cn(
@@ -614,7 +657,7 @@ function Pricing({ onSignup }: { onSignup: () => void }) {
             >
               {p.highlight && (
                 <span className="absolute -top-3 left-7 rounded-full bg-gradient-to-r from-[#2FB3B0] via-[#8CBF6C] to-[#F0B429] px-3 py-1 text-xs font-semibold text-white">
-                  Best value
+                  {edition === "teacher" ? "Best value" : "For big schools"}
                 </span>
               )}
               <h3 className="text-lg font-semibold">{p.name}</h3>
@@ -636,7 +679,7 @@ function Pricing({ onSignup }: { onSignup: () => void }) {
               <motion.button
                 whileTap={{ scale: 0.97 }}
                 transition={snappy}
-                onClick={onSignup}
+                onClick={() => choose(p.id, p.name)}
                 className={cn("mt-8 h-12 rounded-2xl font-medium", p.highlight ? "bg-white text-ink" : "bg-ink text-white")}
               >
                 {p.cta}
