@@ -620,7 +620,7 @@ function Pricing({ onSignup }: { onSignup: () => void }) {
               <p className={cn("mt-1 text-sm", p.highlight ? "text-white/70" : "text-muted")}>{p.blurb}</p>
               <p className="mt-6 flex items-end gap-1.5">
                 <span className="text-5xl leading-none font-semibold tracking-tight">
-                  {p.price === 0 ? "Free" : `${CURRENCY}${p.price.toLocaleString()}`}
+                  {p.id === "trial" ? "Free" : `${CURRENCY}${p.price.toLocaleString()}`}
                 </span>
                 <span className={cn("pb-1 text-sm", p.highlight ? "text-white/70" : "text-muted")}>{p.period}</span>
               </p>

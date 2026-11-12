@@ -67,7 +67,7 @@ export function PlanCards({ sub, onDone }: { sub: Subscription | null; onDone: (
               <h3 className="text-lg font-semibold">{p.name}</h3>
               <p className={cn("text-sm", p.highlight ? "text-white/70" : "text-muted")}>{p.blurb}</p>
               <p className="mt-4 flex items-end gap-1.5">
-                <span className="text-4xl leading-none font-semibold">{p.price === 0 ? "Free" : `${CURRENCY}${p.price.toLocaleString()}`}</span>
+                <span className="text-4xl leading-none font-semibold">{p.id === "trial" ? "Free" : `${CURRENCY}${p.price.toLocaleString()}`}</span>
                 <span className={cn("pb-1 text-sm", p.highlight ? "text-white/70" : "text-muted")}>{p.period}</span>
               </p>
               <ul className="mt-4 flex-1 space-y-2">
