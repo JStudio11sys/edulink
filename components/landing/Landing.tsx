@@ -158,19 +158,11 @@ function Hero({ onLogin, onSignup }: { onLogin: () => void; onSignup: () => void
 
       <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 pt-10 pb-20 lg:grid-cols-[1.05fr_1fr] lg:pt-16 lg:pb-28">
         <div>
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ ...spring, delay: 0.05 }}
-            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3.5 py-1.5 text-xs font-medium text-lilac-deep ring-1 ring-line"
-          >
-            <Sparkles className="size-3.5" /> AI checking for handwritten work
-          </motion.span>
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ ...spring, delay: 0.12 }}
-            className="mt-5 text-[40px] leading-[1.05] font-semibold tracking-tight sm:text-5xl lg:text-[64px]"
+            className="text-[40px] leading-[1.05] font-semibold tracking-tight sm:text-5xl lg:text-[64px]"
           >
             Grade handwritten papers in <span className="bg-gradient-to-r from-[#2FB3B0] via-[#8CBF6C] to-[#F0B429] bg-clip-text text-transparent">minutes</span>, not hours.
           </motion.h1>
