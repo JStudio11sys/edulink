@@ -137,6 +137,7 @@ export function ActivitySheet({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setViewing(w)}
+                    data-guide="task-student"
                     className="flex w-full items-center gap-3 rounded-2xl px-2 py-2.5 text-left transition-colors hover:bg-soft"
                   >
                     <Avatar name={w.student.full_name} size={34} />

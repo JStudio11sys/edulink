@@ -46,7 +46,7 @@ type WorkFilter = "all" | WorkStatus;
 /** Teacher: this week's student work (To do / In progress / Done). */
 function MobileWork() {
   return (
-    <div className="px-5">
+    <div className="px-5" data-guide="dashboard-weekly">
       <div className="mt-8 mb-3">
         <h2 className="text-lg font-semibold">Weekly Ongoing Tasks</h2>
         <p className="text-xs text-muted">By subject and section · Done clears every Monday</p>

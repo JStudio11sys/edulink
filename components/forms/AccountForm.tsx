@@ -127,7 +127,7 @@ export function AccountForm({
           />
 
           {isStudent ? (
-            <>
+            <div className="space-y-5" data-guide="student-names">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Last name">
                   <input
@@ -166,7 +166,7 @@ export function AccountForm({
                   onChange={setSex}
                 />
               </Field>
-            </>
+            </div>
           ) : (
             <Field label="Full name">
               <input
@@ -229,6 +229,7 @@ export function AccountForm({
           </AnimatePresence>
 
           {sections && (
+            <div data-guide="student-section">
             <Field label="Section">
               {sections.length === 0 ? (
                 <p className="text-sm text-muted">No sections yet. Create one in Sections first.</p>
@@ -245,11 +246,12 @@ export function AccountForm({
                 </div>
               )}
             </Field>
+            </div>
           )}
 
           <ErrorNote message={error} />
 
-          <PrimaryButton type="submit" className="w-full" disabled={!valid} loading={busy}>
+          <PrimaryButton guide="student-create" type="submit" className="w-full" disabled={!valid} loading={busy}>
             {existing ? "Save changes" : `Create ${label}`}
           </PrimaryButton>
           {existing && onDelete && (
@@ -320,7 +322,7 @@ function Credentials({
           {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
           {copied ? "Copied" : "Copy details"}
         </PrimaryButton>
-        <PrimaryButton className="flex-1" onClick={onDone}>
+        <PrimaryButton guide="student-done" className="flex-1" onClick={onDone}>
           Done
         </PrimaryButton>
       </div>

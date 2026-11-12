@@ -208,7 +208,9 @@ export function WorkSheet({ w }: { w: StudentWork }) {
       </div>
 
       {w.submission ? (
-        <SubmissionView submission={w.submission} />
+        <div data-guide="work-paper">
+          <SubmissionView submission={w.submission} />
+        </div>
       ) : w.activity.mode === "f2f" ? (
         // Face to face: the teacher photographs this student's paper
         <SubmitFlow activityId={w.activity.id} studentId={w.student.id} byTeacher />
@@ -224,13 +226,15 @@ export function WorkSheet({ w }: { w: StudentWork }) {
         <ScorePanel key={`score-${w.key}`} activityId={w.activity.id} studentId={w.student.id} />
       )}
 
-      <ReviewPanel
-        key={w.key}
-        activityId={w.activity.id}
-        studentId={w.student.id}
-        submitted={!!w.submission}
-        initial={w.review ?? undefined}
-      />
+      <div data-guide="work-feedback">
+        <ReviewPanel
+          key={w.key}
+          activityId={w.activity.id}
+          studentId={w.student.id}
+          submitted={!!w.submission}
+          initial={w.review ?? undefined}
+        />
+      </div>
     </div>
   );
 }

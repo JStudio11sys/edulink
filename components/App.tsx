@@ -4,6 +4,7 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { PersonalProvider } from "@/lib/personal";
+import { GuideProvider } from "@/lib/guide";
 import { UIProvider } from "@/lib/store";
 import { supabaseConfigured } from "@/lib/supabase";
 import { Landing } from "./landing/Landing";
@@ -34,7 +35,8 @@ function PersonalScope({ children }: { children: React.ReactNode }) {
   const who = profile ?? lastProfile;
   return (
     <PersonalProvider key={who?.id ?? "signed-out"} enabled={!!profile && profile.role !== "student"}>
-      {children}
+      {/* Guide state sits here too, so forms inside the sheet can follow it */}
+      <GuideProvider key={who?.id ?? "signed-out"}>{children}</GuideProvider>
     </PersonalProvider>
   );
 }

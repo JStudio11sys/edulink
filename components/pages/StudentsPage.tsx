@@ -82,7 +82,7 @@ export function StudentsPage({ embedded }: { embedded?: boolean } = {}) {
         compact={embedded}
         title={isAdmin ? "Students" : "My students"}
         subtitle={q.loading ? "Loading…" : `${students.length} student${students.length === 1 ? "" : "s"}`}
-        action={!isAdmin && <AddButton label="New student" onClick={() => openForm()} />}
+        action={!isAdmin && <AddButton guide="new-student" label="New student" onClick={() => openForm()} />}
       />
       <PageBody>
         {students.length > 0 && (

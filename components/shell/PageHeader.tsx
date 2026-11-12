@@ -42,13 +42,13 @@ export function PageHeader({
 }
 
 /** "+" on mobile, labelled button on desktop. */
-export function AddButton({ label, onClick }: { label: string; onClick: () => void }) {
+export function AddButton({ label, onClick, guide }: { label: string; onClick: () => void; guide?: string }) {
   return (
     <>
-      <IconButton variant="ink" className="lg:hidden" onClick={onClick} aria-label={label}>
+      <IconButton variant="ink" className="lg:hidden" onClick={onClick} aria-label={label} data-guide={guide}>
         <Plus className="size-[18px]" />
       </IconButton>
-      <PrimaryButton className="hidden lg:flex" onClick={onClick}>
+      <PrimaryButton guide={guide} className="hidden lg:flex" onClick={onClick}>
         <Plus className="size-4" /> {label}
       </PrimaryButton>
     </>

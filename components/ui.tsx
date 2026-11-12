@@ -112,8 +112,10 @@ export function PrimaryButton({
   variant = "ink",
   type = "button",
   className,
+  guide,
 }: {
   children: ReactNode;
+  guide?: string;
   onClick?: () => void;
   disabled?: boolean;
   loading?: boolean;
@@ -124,6 +126,7 @@ export function PrimaryButton({
   const off = disabled || loading;
   return (
     <motion.button
+      data-guide={guide}
       type={type}
       whileTap={off ? undefined : { scale: 0.96 }}
       transition={snappy}
@@ -263,14 +266,17 @@ export function Card({
   className,
   delay = 0,
   onClick,
+  guide,
 }: {
   children: ReactNode;
   className?: string;
+  guide?: string;
   delay?: number;
   onClick?: () => void;
 }) {
   return (
     <motion.div
+      data-guide={guide}
       layout="position"
       initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}

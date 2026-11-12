@@ -1,8 +1,10 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Compass, LogOut } from "lucide-react";
 import { motion } from "motion/react";
 import { useAuth, useMe } from "@/lib/auth";
+import { useGuide } from "@/lib/guide";
+import { useUI } from "@/lib/store";
 import { spring } from "@/lib/motion";
 import { PageBody, PageHeader } from "../shell/PageHeader";
 import { Avatar, Card, PrimaryButton } from "../ui";
@@ -18,6 +20,8 @@ const ROLE = {
 export function ProfilePage() {
   const me = useMe();
   const { signOut } = useAuth();
+  const guide = useGuide();
+  const { setPage } = useUI();
   return (
     <>
       <PageHeader title="Profile" />
@@ -34,7 +38,19 @@ export function ProfilePage() {
               <PlanCard />
             </div>
           )}
-          <PrimaryButton variant="soft" className="mt-8 w-full max-w-xs text-red-500" onClick={signOut}>
+          {guide && (
+            <PrimaryButton
+              variant="soft"
+              className="mt-8 w-full max-w-xs"
+              onClick={() => {
+                setPage("dashboard");
+                guide.restart();
+              }}
+            >
+              <Compass className="size-4" /> Show guide again
+            </PrimaryButton>
+          )}
+          <PrimaryButton variant="soft" className={`${guide ? "mt-2" : "mt-8"} w-full max-w-xs text-red-500`} onClick={signOut}>
             <LogOut className="size-4" /> Log out
           </PrimaryButton>
           <Credit className="mt-4" />
