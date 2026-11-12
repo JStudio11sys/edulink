@@ -25,11 +25,11 @@ function onTop(el: HTMLElement, r: DOMRect) {
 }
 
 /** First visible, uncovered element with this marker. */
-function findTarget(name: string): HTMLElement | null {
+function findTarget(name: string, checkTop = true): HTMLElement | null {
   const all = document.querySelectorAll<HTMLElement>(`[data-guide="${name}"]`);
   for (const el of all) {
     const r = el.getBoundingClientRect();
-    if (r.width > 0 && r.height > 0 && onTop(el, r)) return el;
+    if (r.width > 0 && r.height > 0 && (!checkTop || onTop(el, r))) return el;
   }
   return null;
 }
@@ -70,7 +70,8 @@ export function GuideOverlay() {
     const tick = () => {
       setVp((v) => (v.w === window.innerWidth && v.h === window.innerHeight ? v : { w: window.innerWidth, h: window.innerHeight }));
       const s = GUIDE_STEPS[index];
-      const ok = !s.require || !!findTarget(s.require.target);
+      // The marker may be scrolled out of view — only check that it exists
+      const ok = !s.require || !!findTarget(s.require.target, false);
       setReady((r) => (r === ok ? r : ok));
 
       // "appear" steps go on by themselves

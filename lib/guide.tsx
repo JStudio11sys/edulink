@@ -146,9 +146,21 @@ export const GUIDE_STEPS: GuideStep[] = [
     require: { target: "activity-mode-f2f", hint: "Choose Face to face to continue." },
   },
   {
+    target: "add-part",
+    title: "Add a test part",
+    text: "Tests can be True/False, Multiple choice, Matching or Essay (with a rubric). Tap Add a test part.",
+    advance: "click",
+  },
+  {
+    target: "part-type-truefalse",
+    title: "Choose True / False",
+    text: "For this guide, tap True / False.",
+    advance: "click",
+  },
+  {
     target: "activity-test",
-    title: "Test parts and answer key",
-    text: "Tests can be True/False, Multiple choice, Matching or Essay (with a rubric). The answer key is only for you — EduLink scores papers with it. For this guide: tap Add a test part → True / False, keep 10 items, and tap T or F for 1–10.",
+    title: "Answer key",
+    text: "Keep 10 items, then tap T or F for 1–10. The answer key is only for you — EduLink scores papers with it.",
     advance: "next",
     require: { target: "activity-tf10", hint: "Add a True/False part with 10 items and answer all 10 to continue." },
   },
