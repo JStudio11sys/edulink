@@ -3,7 +3,7 @@
 import { ChevronRight, Pencil, Search, Trash2, Users } from "lucide-react";
 import { useState } from "react";
 import { getProfiles, getSectionStudents, getSections, manageUsers, setStudentSection } from "@/lib/api";
-import { useMe } from "@/lib/auth";
+import { useMe, useReadOnly } from "@/lib/auth";
 import { useUI } from "@/lib/store";
 import type { Profile, Section, SectionStudent } from "@/lib/types";
 import { useQuery } from "@/lib/useQuery";
@@ -35,13 +35,15 @@ export function StudentsPage({ embedded }: { embedded?: boolean } = {}) {
     Profile[],
   ];
 
+  const readOnly = useReadOnly();
   const sectionName = Object.fromEntries(sections.map((s) => [s.id, s.name]));
   const teacherName = Object.fromEntries(teachers.map((t) => [t.id, t.full_name]));
   const mySections = sections.filter((s) => s.teacher_id === me.id);
   const sectionOf = (id: string) => members.find((m) => m.student_id === id)?.section_id ?? null;
 
   const term = search.trim().toLowerCase();
-  const ordered = sortStudents(students);
+  // Teachers see only the students they created (an admin viewing as a teacher can read everyone)
+  const ordered = sortStudents(isAdmin ? students : students.filter((s) => s.created_by === me.id));
   const visible = ordered.filter(
     (s) => !term || displayName(s).toLowerCase().includes(term) || s.full_name.toLowerCase().includes(term) || s.username.includes(term),
   );
@@ -81,11 +83,11 @@ export function StudentsPage({ embedded }: { embedded?: boolean } = {}) {
       <PageHeader
         compact={embedded}
         title={isAdmin ? "Students" : "My students"}
-        subtitle={q.loading ? "Loading…" : `${students.length} student${students.length === 1 ? "" : "s"}`}
-        action={!isAdmin && <AddButton guide="new-student" label="New student" onClick={() => openForm()} />}
+        subtitle={q.loading ? "Loading…" : `${ordered.length} student${ordered.length === 1 ? "" : "s"}`}
+        action={!isAdmin && !readOnly && <AddButton guide="new-student" label="New student" onClick={() => openForm()} />}
       />
       <PageBody>
-        {students.length > 0 && (
+        {ordered.length > 0 && (
           <div className="mb-4 flex h-11 items-center gap-2 rounded-2xl bg-white px-3.5 ring-1 ring-line lg:max-w-sm">
             <Search className="size-4 text-muted" />
             <input
@@ -100,7 +102,7 @@ export function StudentsPage({ embedded }: { embedded?: boolean } = {}) {
 
         {q.loading && !q.data ? (
           <LoadingCards />
-        ) : students.length === 0 ? (
+        ) : ordered.length === 0 ? (
           <EmptyState
             icon={<Users className="size-7" />}
             title="No students yet"
@@ -113,7 +115,7 @@ export function StudentsPage({ embedded }: { embedded?: boolean } = {}) {
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {visible.map((s, i) => (
-              <Card key={s.id} delay={Math.min(i, 8) * 0.03} onClick={() => openForm(s)}>
+              <Card key={s.id} delay={Math.min(i, 8) * 0.03} onClick={readOnly ? undefined : () => openForm(s)}>
                 <div className="flex items-center gap-3">
                   <Avatar name={s.full_name} size={44} />
                   <div className="min-w-0 flex-1">
@@ -121,7 +123,7 @@ export function StudentsPage({ embedded }: { embedded?: boolean } = {}) {
                     <p className="truncate text-sm text-muted">@{s.username}</p>
                   </div>
                   {/* Desktop: quick buttons. Mobile: tap the card (delete is inside the form). */}
-                  <div className="hidden gap-2 lg:flex" onClick={(e) => e.stopPropagation()}>
+                  <div className={readOnly ? "hidden" : "hidden gap-2 lg:flex"} onClick={(e) => e.stopPropagation()}>
                     <IconButton variant="soft" size={36} onClick={() => openForm(s)} aria-label="Edit">
                       <Pencil className="size-4" />
                     </IconButton>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnly } from "@/lib/auth";
 import { ArrowLeft, ChevronRight, Home, Pencil, Trash2, Users } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -51,6 +52,7 @@ export function ActivitySheet({
   onChanged: () => void;
 }) {
   const { openSheet } = useUI();
+  const readOnly = useReadOnly();
   const [viewing, setViewing] = useState<StudentWork | null>(null);
   const done = work.filter((w) => w.submission).length;
   const sectionNames = subjectSections.filter((s) => activitySectionIds.includes(s.id)).map((s) => s.name);
@@ -83,7 +85,7 @@ export function ActivitySheet({
 
           <TestSummary parts={activity.parts} className="mb-5" />
 
-          <div className="mb-5 flex gap-2">
+          <div className={readOnly ? "hidden" : "mb-5 flex gap-2"}>
             <IconButton
               variant="soft"
               size={44}

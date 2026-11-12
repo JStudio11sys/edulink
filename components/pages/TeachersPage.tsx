@@ -1,7 +1,8 @@
 "use client";
 
-import { AtSign, ChevronRight, Pencil, Presentation, Trash2 } from "lucide-react";
+import { AtSign, ChevronRight, Eye, Pencil, Presentation, Trash2 } from "lucide-react";
 import { getProfiles, manageUsers } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { useUI } from "@/lib/store";
 import type { Profile } from "@/lib/types";
 import { useQuery } from "@/lib/useQuery";
@@ -12,7 +13,12 @@ import { Avatar, Card, EmptyState, ErrorNote, IconButton, LoadingCards } from ".
 
 /** Admin: teacher accounts (teachers can also sign up themselves). */
 export function TeachersPage({ embedded }: { embedded?: boolean } = {}) {
-  const { openSheet } = useUI();
+  const { openSheet, setPage } = useUI();
+  const { setViewAs } = useAuth();
+  const viewAs = (t: Profile) => {
+    setPage("dashboard");
+    setViewAs(t);
+  };
   const q = useQuery(() => Promise.all([getProfiles("teacher"), getProfiles("student")]));
   const [teachers, students] = q.data ?? [[], []];
   const studentCount = (id: string) => students.filter((s) => s.created_by === id).length;
@@ -73,9 +79,21 @@ export function TeachersPage({ embedded }: { embedded?: boolean } = {}) {
                   </div>
                   <ChevronRight className="size-5 shrink-0 text-muted lg:hidden" />
                 </div>
-                <p className="mt-3 text-xs text-muted">
-                  {studentCount(t.id)} student{studentCount(t.id) === 1 ? "" : "s"}
-                </p>
+                <div className="mt-3 flex items-center justify-between gap-2">
+                  <p className="text-xs text-muted">
+                    {studentCount(t.id)} student{studentCount(t.id) === 1 ? "" : "s"}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      viewAs(t);
+                    }}
+                    className="flex h-11 items-center gap-1.5 rounded-full bg-lilac-soft px-4 text-sm font-medium text-lilac-deep transition-colors hover:bg-lilac hover:text-white lg:h-9 lg:text-xs"
+                  >
+                    <Eye className="size-4" /> View as teacher
+                  </button>
+                </div>
               </Card>
             ))}
           </div>

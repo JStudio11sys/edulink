@@ -10,6 +10,7 @@ import { usePersonal } from "@/lib/personal";
 import { useUI } from "@/lib/store";
 import type { Lesson, Note, NoteColor, PersonalTask, TaskStatus } from "@/lib/types";
 import { SheetHeader } from "../Sheet";
+import { useReadOnly } from "@/lib/auth";
 import { ErrorNote, Field, PrimaryButton, ProgressBar, Segmented, ToggleChip, inputCls } from "../ui";
 
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -40,6 +41,7 @@ function DeleteButton({ onClick, label }: { onClick: () => void; label: string }
 
 /* ---------------- Task ---------------- */
 export function TaskSheet({ task }: { task?: PersonalTask }) {
+  const readOnly = useReadOnly();
   const { tasks } = usePersonal();
   const { closeSheet } = useUI();
   const [title, setTitle] = useState(task?.title ?? "");
@@ -136,7 +138,7 @@ export function TaskSheet({ task }: { task?: PersonalTask }) {
         />
       </Field>
       <ErrorNote message={error} />
-      <div className="flex gap-2">
+      <div className={readOnly ? "hidden" : "flex gap-2"}>
         {task && (
           <DeleteButton
             label="Delete task"
@@ -164,6 +166,7 @@ export const NOTE_BG: Record<NoteColor, string> = {
 const COLORS: NoteColor[] = ["mint", "lilac", "peach", "sky"];
 
 export function NoteSheet({ note }: { note?: Note }) {
+  const readOnly = useReadOnly();
   const { notes } = usePersonal();
   const { closeSheet } = useUI();
   const [title, setTitle] = useState(note?.title ?? "");
@@ -222,7 +225,7 @@ export function NoteSheet({ note }: { note?: Note }) {
         ))}
       </div>
       <ErrorNote message={error} />
-      <div className="flex gap-2 pt-1">
+      <div className={readOnly ? "hidden" : "flex gap-2 pt-1"}>
         {note && (
           <DeleteButton
             label="Delete note"
@@ -242,6 +245,7 @@ export function NoteSheet({ note }: { note?: Note }) {
 
 /* ---------------- Lesson (timetable) ---------------- */
 export function LessonSheet({ lesson, defaultWeekday }: { lesson?: Lesson; defaultWeekday?: number }) {
+  const readOnly = useReadOnly();
   const { lessons } = usePersonal();
   const { closeSheet } = useUI();
   const [weekday, setWeekday] = useState(lesson?.weekday ?? defaultWeekday ?? todayWeekday());
@@ -309,7 +313,7 @@ export function LessonSheet({ lesson, defaultWeekday }: { lesson?: Lesson; defau
       </Field>
       {start && end && end <= start && <p className="text-sm text-red-500">End time must be after start time.</p>}
       <ErrorNote message={error} />
-      <div className="flex gap-2">
+      <div className={readOnly ? "hidden" : "flex gap-2"}>
         {lesson && (
           <DeleteButton
             label="Delete class"

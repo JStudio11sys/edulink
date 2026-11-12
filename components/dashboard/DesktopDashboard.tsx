@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnly } from "@/lib/auth";
 import { ArrowRight, Check, ChevronDown, ChevronLeft, ChevronRight, LogOut, Plus, Search, User, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -164,6 +165,7 @@ function TopBar({ query, onQuery }: { query: string; onQuery: (q: string) => voi
 
 /* ---------------- My tasks ---------------- */
 function TasksPanel({ query }: { query: string }) {
+  const readOnly = useReadOnly();
   const { tasks } = usePersonal();
   const { openSheet } = useUI();
   const [filter, setFilter] = useState<Filter>("all");
@@ -180,7 +182,7 @@ function TasksPanel({ query }: { query: string }) {
     <Panel className="flex-1" delay={0.05}>
       <div className="flex items-center justify-between">
         <h2 className="text-[22px] font-semibold">My tasks</h2>
-        <IconButton onClick={() => openSheet(<TaskSheet />)} aria-label="New task">
+        <IconButton onClick={() => openSheet(<TaskSheet />)} aria-label="New task" className={readOnly ? "invisible" : undefined}>
           <Plus className="size-[18px]" />
         </IconButton>
       </div>
@@ -325,6 +327,7 @@ function useSideScroll(itemCount: number) {
   return { ref, canLeft, canRight, scrollByPage };
 }
 function NotesPanel() {
+  const readOnly = useReadOnly();
   const { notes } = usePersonal();
   const { openSheet } = useUI();
   const { ref, canLeft, canRight, scrollByPage } = useSideScroll(notes.items.length);
@@ -350,7 +353,7 @@ function NotesPanel() {
               </motion.div>
             )}
           </AnimatePresence>
-          <IconButton onClick={() => openSheet(<NoteSheet />)} aria-label="New note">
+          <IconButton onClick={() => openSheet(<NoteSheet />)} aria-label="New note" className={readOnly ? "invisible" : undefined}>
             <Plus className="size-[18px]" />
           </IconButton>
         </div>
@@ -383,6 +386,7 @@ function NotesPanel() {
 
 /* ---------------- My schedule ---------------- */
 function SchedulePanel() {
+  const readOnly = useReadOnly();
   const { lessons } = usePersonal();
   const { openSheet } = useUI();
   const [day, setDay] = useState(todayWeekday());
@@ -427,7 +431,7 @@ function SchedulePanel() {
               ))
             }
           </Popover>
-          <IconButton onClick={() => openSheet(<LessonSheet defaultWeekday={day} />)} aria-label="Add class">
+          <IconButton onClick={() => openSheet(<LessonSheet defaultWeekday={day} />)} aria-label="Add class" className={readOnly ? "invisible" : undefined}>
             <Plus className="size-[18px]" />
           </IconButton>
         </div>

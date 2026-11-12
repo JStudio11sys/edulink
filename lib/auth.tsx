@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
-import { supabase, supabaseConfigured, toEmail } from "./supabase";
+import { setReadOnly, supabase, supabaseConfigured, toEmail } from "./supabase";
 import type { Profile } from "./types";
 
 interface AuthState {
@@ -13,6 +13,9 @@ interface AuthState {
   /** Email or username. confirmEmail is set when the account still needs its email code. */
   signIn: (login: string, password: string) => Promise<{ error: string | null; confirmEmail?: string }>;
   signOut: () => Promise<void>;
+  /** Admin only: look at the app as this teacher (view only). */
+  viewAs: Profile | null;
+  setViewAs: (p: Profile | null) => void;
 }
 
 const Ctx = createContext<AuthState | null>(null);
@@ -22,6 +25,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [lastProfile, setLastProfile] = useState<Profile | null>(null);
+  const [viewAs, setViewAsState] = useState<Profile | null>(null);
+  const setViewAs = useCallback((p: Profile | null) => {
+    setReadOnly(!!p);
+    setViewAsState(p);
+  }, []);
   if (profile && profile !== lastProfile) setLastProfile(profile);
 
   useEffect(() => {
@@ -88,12 +96,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    setViewAs(null);
     await supabase.auth.signOut();
     setProfile(null);
-  }, []);
+  }, [setViewAs]);
+
+  // Only an admin can view as someone else
+  const viewing = profile?.role === "admin" ? viewAs : null;
 
   return (
-    <Ctx.Provider value={{ loading, profile, lastProfile, notice, signIn, signOut }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ loading, profile, lastProfile, notice, signIn, signOut, viewAs: viewing, setViewAs }}>
+      {children}
+    </Ctx.Provider>
   );
 }
 
@@ -103,10 +117,15 @@ export function useAuth() {
   return s;
 }
 
-/** Signed-in profile (only use under the signed-in shell). */
+/** Signed-in profile, or the teacher an admin is viewing as (only use under the signed-in shell). */
 export function useMe() {
-  const { profile, lastProfile } = useAuth();
-  const me = profile ?? lastProfile;
+  const { profile, lastProfile, viewAs } = useAuth();
+  const me = viewAs ?? profile ?? lastProfile;
   if (!me) throw new Error("Not signed in");
   return me;
+}
+
+/** True while an admin is viewing as a teacher: hide add/edit/delete. */
+export function useReadOnly() {
+  return !!useAuth().viewAs;
 }

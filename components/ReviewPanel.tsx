@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnly } from "@/lib/auth";
 import { Check, MessageSquare } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -70,7 +71,18 @@ export function ReviewPanel({
     }
   };
 
+  const readOnly = useReadOnly();
   const checked = !!review?.checked;
+  if (readOnly) {
+    return (
+      <div className="mt-5 space-y-2 border-t border-line pt-5">
+        <p className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted uppercase">
+          <MessageSquare className="size-4" /> Teacher&apos;s comment {review?.checked && <span className="normal-case">· Checked</span>}
+        </p>
+        <p className="rounded-2xl bg-soft p-4 text-sm whitespace-pre-wrap">{review?.comment || "No comment yet."}</p>
+      </div>
+    );
+  }
   const dirty = comment.trim() !== (review?.comment ?? "");
 
   return (

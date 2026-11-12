@@ -2,7 +2,7 @@
 
 import { Compass, LogOut } from "lucide-react";
 import { motion } from "motion/react";
-import { useAuth, useMe } from "@/lib/auth";
+import { useAuth, useMe, useReadOnly } from "@/lib/auth";
 import { useGuide } from "@/lib/guide";
 import { useUI } from "@/lib/store";
 import { spring } from "@/lib/motion";
@@ -20,6 +20,7 @@ const ROLE = {
 export function ProfilePage() {
   const me = useMe();
   const { signOut } = useAuth();
+  const readOnly = useReadOnly();
   const guide = useGuide();
   const { setPage } = useUI();
   return (
@@ -33,12 +34,12 @@ export function ProfilePage() {
           <p className="mt-4 text-2xl font-semibold">{me.full_name}</p>
           <p className="text-sm text-muted">@{me.username}</p>
           <span className={`mt-3 rounded-full px-3 py-1 text-xs font-medium ${ROLE[me.role].tone}`}>{ROLE[me.role].label}</span>
-          {me.role === "teacher" && (
+          {me.role === "teacher" && !readOnly && (
             <div className="mt-6 w-full">
               <PlanCard />
             </div>
           )}
-          {guide && (
+          {guide && !readOnly && (
             <PrimaryButton
               variant="soft"
               className="mt-8 w-full max-w-xs"
@@ -50,7 +51,7 @@ export function ProfilePage() {
               <Compass className="size-4" /> Show guide again
             </PrimaryButton>
           )}
-          <PrimaryButton variant="soft" className={`${guide ? "mt-2" : "mt-8"} w-full max-w-xs text-red-500`} onClick={signOut}>
+          <PrimaryButton variant="soft" className={`${guide && !readOnly ? "mt-2" : "mt-8"} w-full max-w-xs text-red-500`} onClick={signOut}>
             <LogOut className="size-4" /> Log out
           </PrimaryButton>
           <Credit className="mt-4" />

@@ -89,17 +89,22 @@ function useCollection<T extends { id: string }, New>(
 const byNoteDate = (a: Note, b: Note) => b.updated_at.localeCompare(a.updated_at);
 const byLessonTime = (a: Lesson, b: Lesson) => a.weekday - b.weekday || a.start_time.localeCompare(b.start_time);
 
-function usePersonalData(enabled: boolean) {
+function usePersonalData(enabled: boolean, ownerId?: string) {
+  // Admins can read everyone's rows: keep only this owner's
+  const mine = useCallback(<T extends { owner_id: string }>(xs: T[]) => (ownerId ? xs.filter((x) => x.owner_id === ownerId) : xs), [ownerId]);
+  const loadTasks = useCallback(() => getTasks().then(mine), [mine]);
+  const loadNotes = useCallback(() => getNotes().then(mine), [mine]);
+  const loadLessons = useCallback(() => getLessons().then(mine), [mine]);
   const tasks = useCollection<PersonalTask, Omit<PersonalTask, "id" | "owner_id" | "created_at">>(
     enabled,
-    getTasks,
+    loadTasks,
     insertTask,
     updateTask,
     removeTask,
   );
   const notes = useCollection<Note, Pick<Note, "title" | "body" | "color">>(
     enabled,
-    getNotes,
+    loadNotes,
     insertNote,
     updateNote,
     removeNote,
@@ -107,7 +112,7 @@ function usePersonalData(enabled: boolean) {
   );
   const lessons = useCollection<Lesson, Omit<Lesson, "id" | "owner_id">>(
     enabled,
-    getLessons,
+    loadLessons,
     insertLesson,
     updateLesson,
     removeLesson,
@@ -119,8 +124,8 @@ function usePersonalData(enabled: boolean) {
 type Personal = ReturnType<typeof usePersonalData>;
 const Ctx = createContext<Personal | null>(null);
 
-export function PersonalProvider({ enabled, children }: { enabled: boolean; children: ReactNode }) {
-  const value = usePersonalData(enabled);
+export function PersonalProvider({ enabled, ownerId, children }: { enabled: boolean; ownerId?: string; children: ReactNode }) {
+  const value = usePersonalData(enabled, ownerId);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
