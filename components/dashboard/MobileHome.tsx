@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnly } from "@/lib/auth";
 import { ArrowUpRight, Clock, Plus } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -31,10 +32,11 @@ const greeting = () => {
 };
 
 function SectionTitle({ title, onAdd, label }: { title: string; onAdd: () => void; label: string }) {
+  const readOnly = useReadOnly();
   return (
     <div className="mt-8 mb-3 flex items-center justify-between px-5">
       <h2 className="text-lg font-semibold">{title}</h2>
-      <IconButton size={36} onClick={onAdd} aria-label={label}>
+      <IconButton size={36} onClick={onAdd} aria-label={label} className={readOnly ? "invisible" : undefined}>
         <Plus className="size-4" />
       </IconButton>
     </div>

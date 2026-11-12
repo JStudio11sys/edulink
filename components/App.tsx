@@ -31,10 +31,10 @@ export default function App() {
 
 /** Notes, tasks and timetable for the signed-in teacher/admin. Fresh state per user. */
 function PersonalScope({ children }: { children: React.ReactNode }) {
-  const { profile, lastProfile } = useAuth();
-  const who = profile ?? lastProfile;
+  const { profile, lastProfile, viewAs } = useAuth();
+  const who = viewAs ?? profile ?? lastProfile;
   return (
-    <PersonalProvider key={who?.id ?? "signed-out"} enabled={!!profile && profile.role !== "student"}>
+    <PersonalProvider key={who?.id ?? "signed-out"} ownerId={who?.id} enabled={!!profile && profile.role !== "student"}>
       {/* Guide state sits here too, so forms inside the sheet can follow it */}
       <GuideProvider key={who?.id ?? "signed-out"}>{children}</GuideProvider>
     </PersonalProvider>
@@ -72,7 +72,7 @@ function useSplashPhase(ready: boolean) {
 }
 
 function Gate() {
-  const { loading, profile } = useAuth();
+  const { loading, profile, viewAs } = useAuth();
   const phase = useSplashPhase(!loading);
 
   if (!supabaseConfigured) return <SetupNotice />;
@@ -83,7 +83,7 @@ function Gate() {
     <AnimatePresence mode="wait">
       {profile ? (
         <motion.div
-          key={`app-${profile.id}`}
+          key={`app-${profile.id}-${viewAs?.id ?? "self"}`}
           className="min-h-dvh"
           initial={{ opacity: 0, scale: 1.02, filter: "blur(10px)" }}
           // Clear the filter afterwards: a filter on an ancestor breaks `position: fixed` (mobile layout).

@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnly } from "@/lib/auth";
 import { Calendar, Check, CheckCheck, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
@@ -186,6 +187,7 @@ export function WorkCard({ w, index = 0, ref }: { w: StudentWork; index?: number
 
 /** Opened from a row: the student's work, plus comment and Checked!. */
 export function WorkSheet({ w }: { w: StudentWork }) {
+  const readOnly = useReadOnly();
   return (
     <div className="pt-1">
       <div className="flex items-center gap-3 pr-10">
@@ -211,6 +213,8 @@ export function WorkSheet({ w }: { w: StudentWork }) {
         <div data-guide="work-paper">
           <SubmissionView submission={w.submission} />
         </div>
+      ) : readOnly ? (
+        <p className="rounded-2xl bg-soft p-4 text-sm text-muted">No paper yet.</p>
       ) : w.activity.mode === "f2f" ? (
         // Face to face: the teacher photographs this student's paper
         <SubmitFlow activityId={w.activity.id} studentId={w.student.id} byTeacher />
@@ -223,7 +227,7 @@ export function WorkSheet({ w }: { w: StudentWork }) {
       )}
 
       {w.submission && readParts(w.activity.parts).length > 0 && (
-        <ScorePanel key={`score-${w.key}`} activityId={w.activity.id} studentId={w.student.id} />
+        <ScorePanel key={`score-${w.key}`} activityId={w.activity.id} studentId={w.student.id} parts={readParts(w.activity.parts)} />
       )}
 
       <div data-guide="work-feedback">

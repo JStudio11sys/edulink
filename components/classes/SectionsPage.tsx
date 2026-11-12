@@ -31,6 +31,7 @@ import { cn } from "@/lib/cn";
 import { fmtDate } from "@/lib/format";
 import { snappy, spring } from "@/lib/motion";
 import { useUI } from "@/lib/store";
+import { useReadOnly } from "@/lib/auth";
 import { CATEGORIES, type ClassRow, type Section } from "@/lib/types";
 import { useTeacherData, type StudentWork, type TeacherData } from "@/lib/useTeacherData";
 import { ActionSheet, ConfirmSheet } from "../ConfirmSheet";
@@ -199,6 +200,7 @@ function RenameSheet({ title, value, onSave }: { title: string; value: string; o
 /* ====================== Level 0: all sections / subjects ====================== */
 
 function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
+  const readOnly = useReadOnly();
   const { openSheet, bumpData } = useUI();
   const [tab, setTab] = useState<"sections" | "subjects">("sections");
   const { sections, subjects, classes, studentsIn, loading, error } = data;
@@ -225,9 +227,11 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
           <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
             {tab === "sections" ? (
               <>
-                <Card className="mb-4" guide="section-add">
-                  <InlineAdd placeholder="New section, e.g. Grade 7 – Rizal" onAdd={async (n) => { await addSection(n); bumpData(); }} />
-                </Card>
+                {!readOnly && (
+                  <Card className="mb-4" guide="section-add">
+                    <InlineAdd placeholder="New section, e.g. Grade 7 – Rizal" onAdd={async (n) => { await addSection(n); bumpData(); }} />
+                  </Card>
+                )}
                 {loadingFirst ? (
                   <LoadingCards />
                 ) : sections.length === 0 ? (
@@ -263,9 +267,11 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
               </>
             ) : (
               <>
-                <Card className="mb-4">
-                  <InlineAdd placeholder="New subject, e.g. English" onAdd={async (n) => { await addSubject(n); bumpData(); }} />
-                </Card>
+                {!readOnly && (
+                  <Card className="mb-4">
+                    <InlineAdd placeholder="New subject, e.g. English" onAdd={async (n) => { await addSubject(n); bumpData(); }} />
+                  </Card>
+                )}
                 {loadingFirst ? (
                   <LoadingCards count={2} />
                 ) : subjects.length === 0 ? (
@@ -324,6 +330,7 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
 /* ====================== Level 1: one section ====================== */
 
 function SectionView({ data, sectionId, go }: { data: TeacherData; sectionId: string; go: (v: View) => void }) {
+  const readOnly = useReadOnly();
   const { openSheet, bumpData } = useUI();
   const section = data.sections.find((s) => s.id === sectionId);
   if (!section) return <Missing onBack={() => go({ kind: "home" })} />;
@@ -425,7 +432,7 @@ function SectionView({ data, sectionId, go }: { data: TeacherData; sectionId: st
                         <p className="truncate text-sm font-medium">{displayName(st)}</p>
                         <p className="truncate text-xs text-muted">@{st.username}</p>
                       </div>
-                      <IconButton
+                      {!readOnly && <IconButton
                         variant="soft"
                         size={32}
                         aria-label={`Remove ${st.full_name} from section`}
@@ -441,7 +448,7 @@ function SectionView({ data, sectionId, go }: { data: TeacherData; sectionId: st
                         }
                       >
                         <X className="size-3.5" />
-                      </IconButton>
+                      </IconButton>}
                     </li>
                   ))}
                 </ul>
@@ -561,6 +568,7 @@ function useClassContext(data: TeacherData, classId: string) {
 }
 
 function ClassView({ data, classId, go }: { data: TeacherData; classId: string; go: (v: View) => void }) {
+  const readOnly = useReadOnly();
   const { openSheet, bumpData } = useUI();
   const [tab, setTab] = useState<"students" | "activities">("activities");
   const { cls, section, subject, subjectSections, activities, work } = useClassContext(data, classId);
@@ -598,9 +606,11 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
                 },
               ]}
             />
-            <PrimaryButton guide="new-activity" className="hidden lg:flex" onClick={newActivity}>
-              <Plus className="size-4" /> New activity
-            </PrimaryButton>
+            {!readOnly && (
+              <PrimaryButton guide="new-activity" className="hidden lg:flex" onClick={newActivity}>
+                <Plus className="size-4" /> New activity
+              </PrimaryButton>
+            )}
           </div>
         }
       />
@@ -618,7 +628,7 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
         />
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-            {tab === "activities" && (
+            {tab === "activities" && !readOnly && (
               <PrimaryButton guide="new-activity" className="mb-4 w-full lg:hidden" onClick={newActivity}>
                 <Plus className="size-4" /> New activity
               </PrimaryButton>
@@ -629,7 +639,7 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
                   icon={<BookOpen className="size-7" />}
                   title="No activities yet"
                   text="Create one: choose a category, at home or face to face, and which sections get it."
-                  action={<PrimaryButton guide="new-activity" onClick={newActivity}><Plus className="size-4" /> New activity</PrimaryButton>}
+                  action={readOnly ? undefined : <PrimaryButton guide="new-activity" onClick={newActivity}><Plus className="size-4" /> New activity</PrimaryButton>}
                 />
               ) : (
                 <div className="space-y-6">
@@ -837,6 +847,8 @@ function MoreActions({
   items: { label: string; icon: ReactNode; danger?: boolean; onClick: () => void }[];
 }) {
   const { openSheet } = useUI();
+  const readOnly = useReadOnly();
+  if (readOnly) return null;
   return (
     <>
       <div className="hidden gap-2 lg:flex">
@@ -861,6 +873,7 @@ function MoreActions({
 
 /** Labelled add button for section headings (clear and easy to tap). */
 function AddPill({ label, icon, onClick, guide }: { label: string; icon?: ReactNode; onClick: () => void; guide?: string }) {
+  if (useReadOnly()) return null;
   return (
     <motion.button
       data-guide={guide}

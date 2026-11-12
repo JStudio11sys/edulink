@@ -1,9 +1,9 @@
 "use client";
 
-import { ClipboardList, Compass, LayoutGrid, LogOut, School, Settings, User, Users, type LucideIcon } from "lucide-react";
+import { ClipboardList, Compass, Eye, LayoutGrid, LogOut, School, Settings, User, Users, type LucideIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useEffect } from "react";
-import { useAuth, useMe } from "@/lib/auth";
+import { useAuth, useMe, useReadOnly } from "@/lib/auth";
 import { cn } from "@/lib/cn";
 import { easeOutExpo, snappy, spring } from "@/lib/motion";
 import { useUI, type PageId } from "@/lib/store";
@@ -80,6 +80,16 @@ function PageView({ role, page, isDesktop }: { role: Role; page: PageId; isDeskt
 
 export function AppShell() {
   const me = useMe();
+  const { viewAs } = useAuth();
+  if (viewAs) {
+    // Admin viewing as a teacher: no billing check, a bar to exit
+    return (
+      <>
+        <ViewingBar />
+        <Shell />
+      </>
+    );
+  }
   return me.role === "teacher" ? (
     <BillingGate>
       <Shell />
@@ -179,6 +189,7 @@ function Shell() {
 
 function Sidebar({ items, current, onSelect }: { items: NavItem[]; current: PageId; onSelect: (p: PageId) => void }) {
   const me = useMe();
+  const readOnly = useReadOnly();
   const { signOut } = useAuth();
   return (
     <motion.aside
@@ -201,8 +212,8 @@ function Sidebar({ items, current, onSelect }: { items: NavItem[]; current: Page
       </nav>
 
       <div className="mt-auto space-y-1">
-        {me.role === "teacher" && <StartGuideButton />}
-        {me.role === "teacher" && <TrialBadge onClick={() => onSelect("profile")} />}
+        {me.role === "teacher" && !readOnly && <StartGuideButton />}
+        {me.role === "teacher" && !readOnly && <TrialBadge onClick={() => onSelect("profile")} />}
         <div className="text-center">
           <Credit className="hidden xl:inline-flex" />
           <Credit compact className="xl:hidden" />
@@ -225,6 +236,39 @@ function Sidebar({ items, current, onSelect }: { items: NavItem[]; current: Page
         <NavButton item={{ id: "profile", label: "Log out", icon: LogOut }} active={false} onClick={signOut} />
       </div>
     </motion.aside>
+  );
+}
+
+/** Admin viewing as a teacher: who, view only, and a way back. */
+function ViewingBar() {
+  const { viewAs, setViewAs } = useAuth();
+  const { setPage } = useUI();
+  if (!viewAs) return null;
+  return (
+    <motion.div
+      initial={{ y: -40, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={spring}
+      className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center pt-[max(8px,env(safe-area-inset-top))]"
+    >
+      <div className="pointer-events-auto flex max-w-[calc(100vw-24px)] items-center gap-2 rounded-full bg-ink py-1.5 pr-1.5 pl-4 text-sm text-white shadow-[0_12px_30px_-10px_rgba(0,0,0,0.5)]">
+        <Eye className="size-4 shrink-0" />
+        <span className="min-w-0 truncate">
+          Viewing as <b className="font-semibold">{viewAs.full_name}</b>
+          <span className="text-white/60"> · view only</span>
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            setPage("settings");
+            setViewAs(null);
+          }}
+          className="h-9 shrink-0 rounded-full bg-white px-4 text-sm font-medium text-ink max-lg:h-11"
+        >
+          Exit
+        </button>
+      </div>
+    </motion.div>
   );
 }
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useReadOnly } from "@/lib/auth";
 import { Check, ChevronDown, EyeOff, KeyRound, Minus, Plus, RefreshCw, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
@@ -15,15 +16,25 @@ import {
   type ScoreDetails,
 } from "@/lib/scores";
 import { useUI } from "@/lib/store";
-import { partTypeLabel } from "@/lib/test";
+import { partTypeLabel, type TestPart } from "@/lib/test";
 import { ErrorNote, PrimaryButton } from "./ui";
 
 /**
  * Teacher: AI-suggested score → review (tap items to flip ✓/✗, adjust essay points) → confirm.
  * Runs the AI automatically the first time a paper with test parts is opened.
  */
-export function ScorePanel({ activityId, studentId }: { activityId: string; studentId: string }) {
+export function ScorePanel({
+  activityId,
+  studentId,
+  parts = [],
+}: {
+  activityId: string;
+  studentId: string;
+  /** The activity's test parts (for the rubric descriptions). */
+  parts?: TestPart[];
+}) {
   const { bumpData } = useUI();
+  const readOnly = useReadOnly();
   const [loaded, setLoaded] = useState(false);
   const [score, setScore] = useState<ActivityScore | null>(null);
   const [draft, setDraft] = useState<ScoreDetails | null>(null);
@@ -33,6 +44,8 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
   const [open, setOpen] = useState<string | null>(null);
   /** Parts whose answer key is shown. */
   const [showKey, setShowKey] = useState<string[]>([]);
+  const toggleKey = (partId: string) =>
+    setShowKey((k) => (k.includes(partId) ? k.filter((x) => x !== partId) : [...k, partId]));
   const autoRan = useRef(false);
 
   const grade = async () => {
@@ -65,7 +78,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
       setScore(s);
       setDraft(s?.details ?? null);
       setLoaded(true);
-      if (!s && !autoRan.current) {
+      if (!s && !autoRan.current && !readOnly) {
         autoRan.current = true;
         grade();
       }
@@ -203,16 +216,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
                             <>
                               <div className="mb-2 flex items-center justify-between gap-2">
                                 <p className="text-xs text-muted">Tap an item to mark it right or wrong.</p>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setShowKey((k) => (k.includes(p.part_id) ? k.filter((x) => x !== p.part_id) : [...k, p.part_id]))
-                                  }
-                                  className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 text-xs font-medium text-lilac-deep ring-1 ring-line hover:bg-lilac-soft lg:h-9"
-                                >
-                                  {showKey.includes(p.part_id) ? <EyeOff className="size-3.5" /> : <KeyRound className="size-3.5" />}
-                                  {showKey.includes(p.part_id) ? "Hide answer key" : "View answer key"}
-                                </button>
+                                <KeyToggle open={showKey.includes(p.part_id)} label="answer key" onClick={() => toggleKey(p.part_id)} />
                               </div>
                               <AnimatePresence initial={false}>
                                 {showKey.includes(p.part_id) && (
@@ -238,14 +242,14 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
                                   </motion.div>
                                 )}
                               </AnimatePresence>
-                              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                              <div className="grid gap-2">
                                 {(p.items ?? []).map((it) => (
                                   <motion.button
                                     key={it.n}
                                     type="button"
                                     whileTap={{ scale: 0.94 }}
                                     transition={snappy}
-                                    onClick={() => toggleItem(p.part_id, it.n)}
+                                    onClick={() => !readOnly && toggleItem(p.part_id, it.n)}
                                     className={cn(
                                       "flex min-h-12 items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ring-1 transition-colors",
                                       it.correct ? "bg-mint/50 ring-mint-deep/20" : "bg-red-50 ring-red-200",
@@ -267,6 +271,54 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
                               </div>
                             </>
                           ) : (
+                            <>
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <p className="text-xs text-muted">Adjust the points for each part of the rubric.</p>
+                              <KeyToggle open={showKey.includes(p.part_id)} label="rubric" onClick={() => toggleKey(p.part_id)} />
+                            </div>
+                            <AnimatePresence initial={false}>
+                              {showKey.includes(p.part_id) && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={spring}
+                                  className="overflow-hidden"
+                                >
+                                  <div className="mb-3 space-y-3 rounded-xl bg-white p-3">
+                                    <p className="flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase">
+                                      <KeyRound className="size-3.5" /> Rubric
+                                    </p>
+                                    {(p.questions ?? []).map((q, qi) => {
+                                      const src = parts.find((x) => x.id === p.part_id)?.questions.find((x) => x.id === q.question_id);
+                                      return (
+                                        <div key={q.question_id}>
+                                          {(p.questions ?? []).length > 1 && (
+                                            <p className="mb-1 text-sm font-medium">
+                                              {qi + 1}. {q.prompt || "Essay"}
+                                            </p>
+                                          )}
+                                          <ul className="space-y-1.5">
+                                            {q.criteria.map((c) => {
+                                              const desc = src?.rubric.find((r) => r.id === c.criterion_id)?.description;
+                                              return (
+                                                <li key={c.criterion_id} className="rounded-lg bg-soft px-3 py-2 text-sm">
+                                                  <span className="flex items-center justify-between gap-2">
+                                                    <span className="font-semibold">{c.label}</span>
+                                                    <span className="shrink-0 text-xs font-semibold tabular-nums text-muted">{fmtScore(c.max)} pts</span>
+                                                  </span>
+                                                  {desc && <span className="mt-0.5 block text-xs text-muted">{desc}</span>}
+                                                </li>
+                                              );
+                                            })}
+                                          </ul>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
                             <div className="space-y-3">
                               {(p.questions ?? []).map((q, qi) => (
                                 <div key={q.question_id} className="rounded-xl bg-white p-3">
@@ -297,6 +349,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
                                 </div>
                               ))}
                             </div>
+                            </>
                           )}
                         </div>
                       </motion.div>
@@ -310,7 +363,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
           <div className="mt-3">
             <ErrorNote message={error} />
           </div>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row" data-guide="work-confirm">
+          <div className={readOnly ? "hidden" : "mt-3 flex flex-col gap-2 sm:flex-row"} data-guide="work-confirm">
             <PrimaryButton
               className="w-full sm:flex-1"
               onClick={confirm}
@@ -327,11 +380,29 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
       ) : (
         <div className="mt-3">
           <ErrorNote message={error} />
+          {readOnly ? (
+            <p className="rounded-2xl bg-soft p-4 text-sm text-muted">Not scored yet.</p>
+          ) : (
           <PrimaryButton className="mt-3 w-full" onClick={grade} loading={grading}>
             <Sparkles className="size-4" /> Check with AI
           </PrimaryButton>
+          )}
         </div>
       )}
     </div>
+  );
+}
+
+/** "View answer key" / "View rubric" toggle. */
+function KeyToggle({ open, label, onClick }: { open: boolean; label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 text-xs font-medium text-lilac-deep ring-1 ring-line hover:bg-lilac-soft lg:h-9"
+    >
+      {open ? <EyeOff className="size-3.5" /> : <KeyRound className="size-3.5" />}
+      {open ? `Hide ${label}` : `View ${label}`}
+    </button>
   );
 }
