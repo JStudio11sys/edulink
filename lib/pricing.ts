@@ -36,3 +36,37 @@ export const PLANS = [
     highlight: true,
   },
 ] as const;
+
+/** School Edition: one package for a whole school, managed by the school's admin. Landing page only for now. */
+export const SCHOOL_PLANS = [
+  {
+    id: "school",
+    name: "School Package",
+    price: 0 as number,
+    period: "per year",
+    blurb: "For a whole school — one admin manages every account.",
+    features: [
+      "Admin can manage all teachers & students",
+      "30 teacher accounts",
+      "500 student accounts",
+      "More students: add-on for every 100 accounts",
+    ],
+    cta: "Book a call",
+    highlight: false,
+  },
+  {
+    id: "school-premium",
+    name: "School Package Premium",
+    price: 0 as number,
+    period: "per year",
+    blurb: "For big schools with many sections.",
+    features: [
+      "Admin can manage all teachers & students",
+      "100 teacher accounts",
+      "1,000+ student accounts",
+      "More students: add-on for every 100 accounts",
+    ],
+    cta: "Book a call",
+    highlight: true,
+  },
+] as const;

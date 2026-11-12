@@ -68,7 +68,8 @@ const depth = (v: View) => ({ home: 0, section: 1, class: 2, student: 3 })[v.kin
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /** Teacher: Sections → Section → Subject (class) → Student → activities by category. */
-export function SectionsPage() {
+/** "sections": sections + subjects tabs. "subjects": the Subjects menu (subjects only). */
+export function SectionsPage({ mode = "sections" }: { mode?: "sections" | "subjects" } = {}) {
   const data = useTeacherData();
   const [view, setView] = useState<View>({ kind: "home" });
   const [dir, setDir] = useState(1);
@@ -82,7 +83,7 @@ export function SectionsPage() {
     if (view.kind === "class") return <ClassView data={data} classId={view.classId} go={go} />;
     if (view.kind === "student")
       return <StudentView data={data} classId={view.classId} studentId={view.studentId} go={go} />;
-    return <HomeView data={data} go={go} />;
+    return <HomeView data={data} go={go} mode={mode} />;
   })();
 
   return (
@@ -198,18 +199,23 @@ function RenameSheet({ title, value, onSave }: { title: string; value: string; o
 
 /* ====================== Level 0: all sections / subjects ====================== */
 
-function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
+function HomeView({ data, go, mode }: { data: TeacherData; go: (v: View) => void; mode: "sections" | "subjects" }) {
   const readOnly = useReadOnly();
   const { openSheet, bumpData } = useUI();
-  const [tab, setTab] = useState<"sections" | "subjects">("sections");
+  const [tabState, setTab] = useState<"sections" | "subjects">("sections");
+  const tab = mode === "subjects" ? "subjects" : tabState;
   const { sections, subjects, classes, studentsIn, loading, error } = data;
   const loadingFirst = loading && !data.data;
 
   return (
     <>
-      <PageHeader title="Sections" subtitle="Your sections, subjects and students" />
+      {mode === "subjects" ? (
+        <PageHeader title="Subjects" subtitle="Create and manage the subjects you teach" />
+      ) : (
+        <PageHeader title="Sections" subtitle="Your sections, subjects and students" />
+      )}
       <PageBody>
-        <Segmented
+        {mode === "sections" && <Segmented
           className="mb-4"
           layoutId="sections-home-tab"
           size="md"
@@ -219,7 +225,7 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
           ]}
           value={tab}
           onChange={setTab}
-        />
+        />}
         <ErrorNote message={error} />
 
         <AnimatePresence mode="wait" initial={false}>
@@ -279,13 +285,34 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
                   <Card className="p-2">
                     <ul>
                       {subjects.map((s) => {
-                        const n = classes.filter((c) => c.subject_id === s.id).length;
+                        const inClasses = classes.filter((c) => c.subject_id === s.id);
+                        const n = inClasses.length;
                         return (
                           <li key={s.id} className="flex items-center gap-3 rounded-2xl px-3 py-3 hover:bg-soft">
                             <SubjectIcon name={s.name} />
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-medium">{s.name}</p>
-                              <p className="text-xs text-muted">{n} section{n === 1 ? "" : "s"}</p>
+                              {mode === "subjects" && n > 0 ? (
+                                // Shortcut: tap a section to open this subject there
+                                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                  {inClasses.map((c) => (
+                                    <button
+                                      key={c.id}
+                                      type="button"
+                                      onClick={() => go({ kind: "class", classId: c.id })}
+                                      className="flex h-9 items-center gap-1 rounded-full bg-lilac-soft px-3 text-xs font-medium text-lilac-deep transition-colors hover:bg-lilac hover:text-white max-lg:h-11 max-lg:text-sm"
+                                    >
+                                      {sections.find((x) => x.id === c.section_id)?.name ?? "Section"}
+                                      <ChevronRight className="size-3.5" />
+                                    </button>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-xs text-muted">
+                                  {n} section{n === 1 ? "" : "s"}
+                                  {mode === "subjects" && " · add it to a section from Sections"}
+                                </p>
+                              )}
                             </div>
                             <MoreActions
                               title={s.name}
