@@ -179,7 +179,8 @@ function Hero({ onLogin, onSignup }: { onLogin: () => void; onSignup: () => void
             className="mt-5 max-w-xl text-lg leading-relaxed text-ink-2"
           >
             Snap your students&apos; test papers. EduLink reads the handwriting, checks it against your answer key and suggests rubric
-            scores for essays — you review and confirm. Built for individual teachers.
+            scores for essays — you review and confirm. Then generate and download your E-Class Record with every score filled in
+            automatically. No more manual encoding.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 16 }}
