@@ -196,9 +196,47 @@ export const updateLesson = (id: string, patch: Partial<Lesson>) =>
 export const removeLesson = (id: string) => run(supabase.from("timetable").delete().eq("id", id));
 
 /* ---------- Student submission ---------- */
-/** Reads handwriting from a photo (data URL) via the transcribe Edge Function. */
 /** Reads the handwriting on one or more pages (data URLs), in order. */
-export const transcribe = (images: string[]) => callFunction<{ text: string }>("transcribe", { images });
+export const transcribe = async (images: string[]) => {
+  const res = await callFunction<{ text: string }>("transcribe", { images });
+  return { ...res, text: orderNumbered(res.text ?? "") };
+};
+
+/**
+ * Answer sheets written in columns come back as "1. T 6. F".
+ * Put numbered answers one per line in number order (1, 2, 3 …); other text is kept as is.
+ * Each "Page N" block is sorted on its own.
+ */
+export function orderNumbered(text: string) {
+  return text
+    .split(/(?=^Page \d+\s*$)/m)
+    .map(orderBlock)
+    .join("");
+}
+
+function orderBlock(block: string) {
+  const lines = block.split(/\r?\n/);
+  const head: string[] = [];
+  const tail: string[] = [];
+  const items: { n: number; answer: string }[] = [];
+  for (const line of lines) {
+    const pieces = line.trim() ? line.trim().split(/\s+(?=\d{1,3}\s*[.)](?:\s|$))/) : [];
+    const parsed = pieces.map((p) => p.match(/^(\d{1,3})\s*[.)]\s*(.*)$/));
+    if (pieces.length && parsed.every(Boolean)) {
+      for (const m of parsed) items.push({ n: Number(m![1]), answer: m![2].trim() });
+    } else if (!line.trim()) {
+      continue; // blank lines between columns
+    } else if (items.length) tail.push(line);
+    else head.push(line);
+  }
+  // Only short, unique numbered answers (an answer sheet) — leave essays alone
+  const unique = new Set(items.map((i) => i.n)).size === items.length;
+  const short = items.every((i) => i.answer.length <= 30);
+  if (items.length < 3 || !unique || !short || tail.length > 2) return block;
+  const sorted = [...items].sort((x, y) => x.n - y.n).map((i) => `${i.n}. ${i.answer}`.trimEnd());
+  const end = /\n$/.test(block) ? "\n" : "";
+  return [...head, ...sorted, ...tail].join("\n") + end;
+}
 
 /** Uploads every page in order, then saves the submission. Locked for the student afterwards. */
 export async function submitWork(studentId: string, activityId: string, photos: Blob[], text: string) {

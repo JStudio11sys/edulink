@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, LayoutGrid, LogOut, School, Settings, User, Users, type LucideIcon } from "lucide-react";
+import { ClipboardList, Compass, LayoutGrid, LogOut, School, Settings, User, Users, type LucideIcon } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useEffect } from "react";
 import { useAuth, useMe } from "@/lib/auth";
@@ -27,6 +27,8 @@ import { Credit } from "../Credit";
 import { PlanPage, TrialBadge } from "../billing/Plans";
 import { access, getSubscription } from "@/lib/billing";
 import { useQuery } from "@/lib/useQuery";
+import { useGuide } from "@/lib/guide";
+import { GuideOverlay } from "../guide/GuideOverlay";
 
 type NavItem = { id: PageId; label: string; icon: LucideIcon };
 
@@ -81,6 +83,7 @@ export function AppShell() {
   return me.role === "teacher" ? (
     <BillingGate>
       <Shell />
+      <GuideOverlay />
     </BillingGate>
   ) : (
     <Shell />
@@ -198,6 +201,7 @@ function Sidebar({ items, current, onSelect }: { items: NavItem[]; current: Page
       </nav>
 
       <div className="mt-auto space-y-1">
+        {me.role === "teacher" && <StartGuideButton />}
         {me.role === "teacher" && <TrialBadge onClick={() => onSelect("profile")} />}
         <div className="text-center">
           <Credit className="hidden xl:inline-flex" />
@@ -224,10 +228,37 @@ function Sidebar({ items, current, onSelect }: { items: NavItem[]; current: Page
   );
 }
 
+/** Shiny button that restarts the first-time guide. */
+function StartGuideButton() {
+  const guide = useGuide();
+  if (!guide) return null;
+  return (
+    <motion.button
+      whileTap={{ scale: 0.95 }}
+      transition={snappy}
+      onClick={guide.restart}
+      title="Start Guide"
+      className="relative mb-1 flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-2xl bg-gradient-to-r from-[#2FB3B0] via-[#8CBF6C] to-[#F0B429] text-sm font-semibold text-white shadow-[0_10px_24px_-10px_rgba(47,179,176,0.7)]"
+    >
+      {/* moving shine */}
+      <motion.span
+        aria-hidden
+        className="pointer-events-none absolute inset-y-0 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-white/60 to-transparent"
+        initial={{ left: "-60%" }}
+        animate={{ left: "130%" }}
+        transition={{ duration: 1.4, repeat: Infinity, repeatDelay: 1.8, ease: "easeInOut" }}
+      />
+      <Compass className="relative size-[18px] shrink-0" />
+      <span className="relative hidden xl:inline">Start Guide</span>
+    </motion.button>
+  );
+}
+
 function NavButton({ item, active, onClick }: { item: NavItem; active: boolean; onClick: () => void }) {
   const Icon = item.icon;
   return (
     <motion.button
+      data-guide={`nav-${item.id}`}
       onClick={onClick}
       whileTap={{ scale: 0.95 }}
       transition={snappy}
@@ -267,6 +298,7 @@ function TabBar({ items, current, onSelect }: { items: NavItem[]; current: PageI
               transition={snappy}
               onClick={() => onSelect(t.id)}
               aria-label={t.label}
+              data-guide={`nav-${t.id}`}
               className="relative grid size-12 place-items-center rounded-full"
             >
               {on && <motion.span layoutId="tab-active" transition={spring} className="absolute inset-0 rounded-full bg-white" />}

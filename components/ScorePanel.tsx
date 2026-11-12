@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronDown, Minus, Plus, RefreshCw, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, EyeOff, KeyRound, Minus, Plus, RefreshCw, Sparkles, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/cn";
@@ -31,6 +31,8 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [open, setOpen] = useState<string | null>(null);
+  /** Parts whose answer key is shown. */
+  const [showKey, setShowKey] = useState<string[]>([]);
   const autoRan = useRef(false);
 
   const grade = async () => {
@@ -143,7 +145,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
       </div>
 
       {grading && !live ? (
-        <div className="mt-3 rounded-[22px] bg-soft p-5 text-center">
+        <div className="mt-3 rounded-[22px] bg-soft p-5 text-center" data-guide="work-checking">
           <motion.div
             className="mx-auto mb-3 grid size-12 place-items-center rounded-2xl bg-white"
             animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.05, 1] }}
@@ -157,7 +159,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
       ) : live ? (
         <>
           {/* Total */}
-          <motion.div layout className="mt-3 flex items-end gap-2">
+          <motion.div layout className="mt-3 flex items-end gap-2" data-guide="work-score">
             <motion.span key={live.score} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={snappy} className="text-4xl leading-none font-semibold tabular-nums">
               {fmtScore(live.score)}
             </motion.span>
@@ -196,10 +198,46 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
                         transition={spring}
                         className="overflow-hidden"
                       >
-                        <div className="px-4 pb-4">
+                        <div className="px-4 pb-4" data-guide="work-items">
                           {p.type !== "essay" ? (
                             <>
-                              <p className="mb-2 text-xs text-muted">Tap an item to mark it right or wrong.</p>
+                              <div className="mb-2 flex items-center justify-between gap-2">
+                                <p className="text-xs text-muted">Tap an item to mark it right or wrong.</p>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setShowKey((k) => (k.includes(p.part_id) ? k.filter((x) => x !== p.part_id) : [...k, p.part_id]))
+                                  }
+                                  className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-3.5 text-xs font-medium text-lilac-deep ring-1 ring-line hover:bg-lilac-soft lg:h-9"
+                                >
+                                  {showKey.includes(p.part_id) ? <EyeOff className="size-3.5" /> : <KeyRound className="size-3.5" />}
+                                  {showKey.includes(p.part_id) ? "Hide answer key" : "View answer key"}
+                                </button>
+                              </div>
+                              <AnimatePresence initial={false}>
+                                {showKey.includes(p.part_id) && (
+                                  <motion.div
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: "auto", opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={spring}
+                                    className="overflow-hidden"
+                                  >
+                                    <div className="mb-3 rounded-xl bg-white p-3">
+                                      <p className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase">
+                                        <KeyRound className="size-3.5" /> Answer key
+                                      </p>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {(p.items ?? []).map((it) => (
+                                          <span key={it.n} className="rounded-lg bg-soft px-2.5 py-1 text-sm tabular-nums">
+                                            <span className="text-muted">{it.n}.</span> <span className="font-mono font-semibold">{it.key ?? "—"}</span>
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
                               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                                 {(p.items ?? []).map((it) => (
                                   <motion.button
@@ -209,13 +247,17 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
                                     transition={snappy}
                                     onClick={() => toggleItem(p.part_id, it.n)}
                                     className={cn(
-                                      "flex min-h-12 items-center gap-2 rounded-xl px-3 text-left text-sm ring-1 transition-colors",
+                                      "flex min-h-12 items-center gap-2 rounded-xl px-3 py-2 text-left text-sm ring-1 transition-colors",
                                       it.correct ? "bg-mint/50 ring-mint-deep/20" : "bg-red-50 ring-red-200",
                                     )}
                                   >
                                     <span className="w-5 text-right font-semibold text-muted tabular-nums">{it.n}</span>
                                     <span className="font-mono font-semibold">{it.answer ?? "—"}</span>
-                                    {!it.correct && it.key && <span className="text-xs text-muted">→ {it.key}</span>}
+                                    {!it.correct && it.key && (
+                                      <span className="text-xs leading-snug text-muted">
+                                        → Correct answer is <span className="font-mono font-semibold text-ink">{it.key}</span>
+                                      </span>
+                                    )}
                                     <span className="ml-auto">
                                       {it.correct ? <Check className="size-4 text-mint-deep" /> : <X className="size-4 text-red-500" />}
                                     </span>
@@ -268,7 +310,7 @@ export function ScorePanel({ activityId, studentId }: { activityId: string; stud
           <div className="mt-3">
             <ErrorNote message={error} />
           </div>
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row" data-guide="work-confirm">
             <PrimaryButton
               className="w-full sm:flex-1"
               onClick={confirm}

@@ -90,6 +90,7 @@ export function ActivityForm({
     >
       <SheetHeader title={existing ? "Edit activity" : "New activity"} subtitle={subject.name} />
 
+      <div data-guide="activity-title">
       <Field label="Title">
         <input
           autoFocus={!existing}
@@ -99,7 +100,9 @@ export function ActivityForm({
           className={inputCls}
         />
       </Field>
+      </div>
 
+      <div data-guide="activity-category">
       <Field label="Category">
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => (
@@ -109,7 +112,9 @@ export function ActivityForm({
           ))}
         </div>
       </Field>
+      </div>
 
+      <div data-guide="activity-mode">
       <Field
         label="Where is it done?"
         hint={
@@ -130,6 +135,9 @@ export function ActivityForm({
           onChange={setMode}
         />
       </Field>
+      {/* Lets the guide know Face to face is picked */}
+      {mode === "f2f" && <span data-guide="activity-mode-f2f" className="block h-px w-full" />}
+      </div>
 
       <Field label="Sections" hint="Give the same activity to several sections of this subject.">
         <div className="flex flex-wrap gap-1.5">
@@ -158,8 +166,11 @@ export function ActivityForm({
         />
       </Field>
 
+      <div data-guide="activity-test">
       <TestBuilder parts={parts} onParts={setParts} answerKey={answerKey} onKey={setAnswerKey} />
+      </div>
 
+      <div className="space-y-5" data-guide="activity-finish">
       <Field label="Due date (optional)">
         <input type="date" value={due} onChange={(e) => setDue(e.target.value)} className={inputCls} />
       </Field>
@@ -170,6 +181,7 @@ export function ActivityForm({
         {mode === "f2f" ? <Users className="size-4" /> : <Home className="size-4" />}
         {existing ? "Save changes" : "Create activity"}
       </PrimaryButton>
+      </div>
     </form>
   );
 }

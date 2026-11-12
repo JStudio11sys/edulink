@@ -24,9 +24,10 @@ const FILTERS: { value: Filter; label: string }[] = [
   { value: "done", label: "Done" },
 ];
 
-function Panel({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
+function Panel({ children, className, delay = 0, guide }: { children: React.ReactNode; className?: string; delay?: number; guide?: string }) {
   return (
     <motion.section
+      data-guide={guide}
       initial={{ opacity: 0, y: 18, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ type: "spring", stiffness: 240, damping: 30, delay }}
@@ -231,7 +232,7 @@ const WORK_FILTERS: { value: WorkFilter; label: string }[] = [
 
 function WorkPanel({ query }: { query: string }) {
   return (
-    <Panel className="flex-1" delay={0.05}>
+    <Panel className="flex-1" delay={0.05} guide="dashboard-weekly">
       <h2 className="text-[22px] leading-tight font-semibold">Weekly Ongoing Tasks</h2>
       <p className="mb-3 text-xs text-muted">By subject and section · Done clears every Monday</p>
       <TaskBoard weekly query={query} layoutKey="d-weekly" />

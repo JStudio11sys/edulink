@@ -23,6 +23,8 @@ Rules:
 - Write out exactly what is handwritten, word for word.
 - Do NOT correct spelling, grammar, math or answers — the teacher grades the original.
 - Keep the student's line breaks, numbering and order.
+- Numbered answers (like a test answer sheet) go one per line in number order (1, 2, 3, …),
+  even when they are written in two or more columns. Put the name on its own first line.
 - Write math in plain text (e.g. 3x + 2 = 11, x^2, 1/2).
 - If a word is unreadable, write [?] in its place.
 - Ignore printed text on the paper (like worksheet headings) unless the student wrote on it.

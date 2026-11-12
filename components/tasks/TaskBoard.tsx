@@ -216,6 +216,7 @@ function TaskRowItem({ row, onOpen, ref }: { row: TaskRow; onOpen: () => void; r
         whileTap={{ scale: 0.985 }}
         transition={snappy}
         onClick={onOpen}
+        data-guide="task-row"
         className="w-full rounded-2xl px-2 py-3 text-left transition-colors hover:bg-soft max-lg:py-3.5"
       >
         <div className="flex items-start justify-between gap-3">

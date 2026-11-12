@@ -54,8 +54,14 @@ export function TestBuilder({
     setAdding(false);
   };
 
+  // Lets the guide know a True/False part with 10 items and a full key is ready
+  const tf10Ready = parts.some(
+    (p) => p.type === "truefalse" && p.items === 10 && Array.from({ length: 10 }, (_, i) => answerKey[p.id]?.[i]).every(Boolean),
+  );
+
   return (
     <div>
+      {tf10Ready && <span data-guide="activity-tf10" className="block h-px w-full" />}
       <div className="mb-2 flex items-center justify-between gap-2">
         <span className="text-xs font-medium tracking-wide text-muted uppercase">Test parts</span>
         {parts.length > 0 && (

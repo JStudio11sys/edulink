@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { submitWork, transcribe } from "@/lib/api";
 import { useMe } from "@/lib/auth";
+import { useGuide } from "@/lib/guide";
 import { cn } from "@/lib/cn";
 import { snappy, spring } from "@/lib/motion";
 import { useUI } from "@/lib/store";
@@ -12,6 +13,8 @@ import { ErrorNote, PrimaryButton, inputCls } from "../ui";
 import { CameraCapture, fileToJpeg } from "./CameraCapture";
 
 const MAX_PAGES = 10;
+/** Sample handwritten paper the guide uploads instead of opening the file picker. */
+const SAMPLE_PAPER = `${process.env.NEXT_PUBLIC_BASE_PATH || ""}/guide/sample-paper.png`;
 const msg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 /** Cheap fingerprint of the pages (to know if the text was read for this exact order). */
@@ -55,6 +58,7 @@ export function SubmitFlow({
 }) {
   const me = useMe();
   const { closeSheet, bumpData } = useUI();
+  const guide = useGuide();
   const uploadRef = useRef<HTMLInputElement>(null);
   const phoneCamRef = useRef<HTMLInputElement>(null);
   const draftKey = `edulink-draft-${me.id}-${studentId}-${activityId}`;
@@ -113,6 +117,24 @@ export function SubmitFlow({
   const onFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
+    await addFiles(files);
+  };
+
+  // "Upload photos": during the guide, use the sample paper
+  const upload = async () => {
+    if (byTeacher && guide?.active && guide.step.target === "paper-upload") {
+      try {
+        const blob = await (await fetch(SAMPLE_PAPER)).blob();
+        await addFiles([new File([blob], "sample-paper.png", { type: blob.type || "image/png" })]);
+      } catch (err) {
+        setError(msg(err));
+      }
+      return;
+    }
+    uploadRef.current?.click();
+  };
+
+  const addFiles = async (files: File[]) => {
     if (!files.length) return;
     setError(null);
     try {
@@ -206,7 +228,7 @@ export function SubmitFlow({
           <PrimaryButton className="w-full" onClick={() => setCamera(true)}>
             <Camera className="size-4" /> {byTeacher ? "Take photos of test paper" : "Take photos of my work"}
           </PrimaryButton>
-          <PrimaryButton variant="soft" className="w-full" onClick={() => uploadRef.current?.click()}>
+          <PrimaryButton guide="paper-upload" variant="soft" className="w-full" onClick={upload}>
             <ImageUp className="size-4" /> Upload photos
           </PrimaryButton>
           <p className="pt-1 text-center text-xs text-muted">
@@ -332,7 +354,7 @@ export function SubmitFlow({
           </AnimatePresence>
 
           {/* Text */}
-          <div>
+          <div data-guide={reading ? "paper-reading" : "paper-text"}>
             <p className="mb-2 flex items-center gap-1.5 text-xs font-medium tracking-wide text-muted uppercase">
               <ScanText className="size-4" />
               {reading
@@ -398,14 +420,14 @@ export function SubmitFlow({
                   <PrimaryButton variant="soft" className="flex-1 bg-white" onClick={() => setConfirming(false)} disabled={busy}>
                     Not yet
                   </PrimaryButton>
-                  <PrimaryButton className="flex-1" onClick={submit} loading={busy}>
+                  <PrimaryButton guide="paper-confirm" className="flex-1" onClick={submit} loading={busy}>
                     {byTeacher ? "Yes, save" : "Yes, submit"}
                   </PrimaryButton>
                 </div>
               </motion.div>
             ) : (
               <motion.div key="submit" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <PrimaryButton className="w-full" disabled={reading || !text.trim()} onClick={() => setConfirming(true)}>
+                <PrimaryButton guide="paper-save" className="w-full" disabled={reading || !text.trim()} onClick={() => setConfirming(true)}>
                   {byTeacher ? "Save paper" : "Submit"}
                 </PrimaryButton>
               </motion.div>

@@ -225,7 +225,7 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
           <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
             {tab === "sections" ? (
               <>
-                <Card className="mb-4">
+                <Card className="mb-4" guide="section-add">
                   <InlineAdd placeholder="New section, e.g. Grade 7 – Rizal" onAdd={async (n) => { await addSection(n); bumpData(); }} />
                 </Card>
                 {loadingFirst ? (
@@ -237,7 +237,7 @@ function HomeView({ data, go }: { data: TeacherData; go: (v: View) => void }) {
                     {sections.map((s, i) => {
                       const subs = classes.filter((c) => c.section_id === s.id);
                       return (
-                        <Card key={s.id} delay={Math.min(i, 8) * 0.03} onClick={() => go({ kind: "section", sectionId: s.id })}>
+                        <Card key={s.id} guide="section-card" delay={Math.min(i, 8) * 0.03} onClick={() => go({ kind: "section", sectionId: s.id })}>
                           <div className="flex items-start justify-between gap-2">
                             <span className="grid size-11 place-items-center rounded-2xl bg-lilac text-white">
                               <Users className="size-5" />
@@ -372,7 +372,7 @@ function SectionView({ data, sectionId, go }: { data: TeacherData; sectionId: st
           <div>
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Subjects</h2>
-              <AddPill label="Add subject" onClick={() => openSheet(<AddSubjectSheet data={data} section={section} />)} />
+              <AddPill guide="add-subject" label="Add subject" onClick={() => openSheet(<AddSubjectSheet data={data} section={section} />)} />
             </div>
             {sectionClasses.length === 0 ? (
               <p className="rounded-[22px] bg-white p-5 text-sm text-muted">No subjects yet. Tap “Add subject”.</p>
@@ -389,6 +389,7 @@ function SectionView({ data, sectionId, go }: { data: TeacherData; sectionId: st
                       transition={{ ...spring, delay: Math.min(i, 8) * 0.04 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => go({ kind: "class", classId: c.id })}
+                      data-guide="subject-tile"
                       className="rounded-[22px] bg-white p-3.5 text-left transition-shadow hover:shadow-[0_14px_40px_-16px_rgba(20,20,40,0.25)]"
                     >
                       <SubjectIcon name={subj?.name ?? ""} size="sm" />
@@ -402,7 +403,7 @@ function SectionView({ data, sectionId, go }: { data: TeacherData; sectionId: st
           </div>
 
           {/* Students in this section */}
-          <div className="mt-7 lg:mt-0">
+          <div className="mt-7 lg:mt-0" data-guide="section-students">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Students</h2>
               <AddPill label="Add students" icon={<UserPlus className="size-4" />} onClick={() => openSheet(<AddStudentsSheet data={data} section={section} />)} />
@@ -597,7 +598,7 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
                 },
               ]}
             />
-            <PrimaryButton className="hidden lg:flex" onClick={newActivity}>
+            <PrimaryButton guide="new-activity" className="hidden lg:flex" onClick={newActivity}>
               <Plus className="size-4" /> New activity
             </PrimaryButton>
           </div>
@@ -618,7 +619,7 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
         <AnimatePresence mode="wait" initial={false}>
           <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
             {tab === "activities" && (
-              <PrimaryButton className="mb-4 w-full lg:hidden" onClick={newActivity}>
+              <PrimaryButton guide="new-activity" className="mb-4 w-full lg:hidden" onClick={newActivity}>
                 <Plus className="size-4" /> New activity
               </PrimaryButton>
             )}
@@ -628,7 +629,7 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
                   icon={<BookOpen className="size-7" />}
                   title="No activities yet"
                   text="Create one: choose a category, at home or face to face, and which sections get it."
-                  action={<PrimaryButton onClick={newActivity}><Plus className="size-4" /> New activity</PrimaryButton>}
+                  action={<PrimaryButton guide="new-activity" onClick={newActivity}><Plus className="size-4" /> New activity</PrimaryButton>}
                 />
               ) : (
                 <div className="space-y-6">
@@ -650,6 +651,7 @@ function ClassView({ data, classId, go }: { data: TeacherData; classId: string; 
                               return (
                                 <Card
                                   key={a.id}
+                                  guide="activity-card"
                                   delay={Math.min(i, 6) * 0.03}
                                   className="p-4"
                                   onClick={() =>
@@ -858,9 +860,10 @@ function MoreActions({
 }
 
 /** Labelled add button for section headings (clear and easy to tap). */
-function AddPill({ label, icon, onClick }: { label: string; icon?: ReactNode; onClick: () => void }) {
+function AddPill({ label, icon, onClick, guide }: { label: string; icon?: ReactNode; onClick: () => void; guide?: string }) {
   return (
     <motion.button
+      data-guide={guide}
       whileTap={{ scale: 0.95 }}
       transition={snappy}
       onClick={onClick}
@@ -893,7 +896,7 @@ function AddSubjectSheet({ data, section }: { data: TeacherData; section: Sectio
   };
 
   return (
-    <div className="pt-1">
+    <div className="pt-1" data-guide="subject-sheet">
       <SheetHeader title={`Add a subject to ${section.name}`} />
       {available.length > 0 && (
         <>

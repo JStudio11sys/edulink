@@ -9,6 +9,8 @@ export interface Profile {
   sex?: "female" | "male" | null;
   username: string;
   created_by: string | null;
+  /** First-time guide finished or skipped (teachers). */
+  guide_done?: boolean;
   created_at: string;
 }
 
